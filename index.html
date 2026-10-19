@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Hugo Hectus</title>
+
+<style>
+  :root {
+    --margin: 14px;
+    --font-size: 14px;
+    --line-height: 1.15;
+    --header-h: 44px;
+    --caption-h: 52px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    color: #000;
+    overflow: hidden;
+    font-family: "Times New Roman", Times, serif;
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+  }
+
+  a,
+  button {
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  a:hover,
+  button:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-h);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--margin);
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  header a,
+  header button {
+    pointer-events: auto;
+  }
+
+  main {
+    position: fixed;
+    inset: 0;
+  }
+
+  .stage {
+    position: absolute;
+    top: var(--header-h);
+    left: var(--margin);
+    right: var(--margin);
+    bottom: var(--caption-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stage img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .click-zone {
+    position: fixed;
+    top: var(--header-h);
+    bottom: var(--caption-h);
+    z-index: 5;
+  }
+
+  .click-zone.prev {
+    left: 0;
+    width: 50vw;
+    cursor: w-resize;
+  }
+
+  .click-zone.next {
+    right: 0;
+    width: 50vw;
+    cursor: e-resize;
+  }
+
+  .grid {
+    display: none;
+  }
+
+  body.grid-mode .stage,
+  body.grid-mode .click-zone,
+  body.grid-mode .caption {
+    display: none;
+  }
+
+  body.grid-mode {
+    overflow: auto;
+  }
+
+  body.grid-mode .grid {
+    position: fixed;
+    top: var(--header-h);
+    left: var(--margin);
+    right: var(--margin);
+    bottom: var(--margin);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    overflow-y: auto;
+    z-index: 4;
+  }
+
+  .grid img {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: pointer;
+    -webkit-user-drag: none;
+  }
+
+  .caption {
+    position: fixed;
+    left: var(--margin);
+    right: var(--margin);
+    bottom: var(--margin);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .caption-text {
+    max-width: 70vw;
+  }
+
+  .counter {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 700px) {
+    :root {
+      --margin: 10px;
+      --font-size: 13px;
+      --header-h: 38px;
+      --caption-h: 70px;
+    }
+
+    .caption {
+      align-items: flex-start;
+    }
+
+    .caption-text {
+      max-width: calc(100vw - 70px);
+    }
+
+    body.grid-mode .grid {
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+    }
+  }
+  
+  /* TEMPORARY LANDING PAGE */
+
+body > *:not(.temporary-page) {
+  display: none !important;
+}
+
+.temporary-page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 14px;
+  line-height: 1.15;
+
+  background: #fff;
+  color: #000;
+}
+  
+</style>
+</head>
+
+<body>
+
+<header>
+  <button id="gridToggle">HUGO HECTUS</button>
+  <a href="cv.html">CV</a>
+</header>
+
+<main id="viewer">
+
+  <button class="click-zone prev" id="prevZone" aria-label="Previous image"></button>
+  <button class="click-zone next" id="nextZone" aria-label="Next image"></button>
+
+  <div class="stage">
+    <img id="image" src="" alt="">
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+</main>
+
+<footer class="caption">
+  <div class="caption-text" id="caption"></div>
+  <div class="counter" id="counter"></div>
+</footer>
+
+<script>
+  const works = [
+    {
+      src: "images/260524_01.jpg",
+      alt: "Gym Louvre",
+      caption: `<em>Gym Louvre</em>, 2026<br>Oil pastel, wood, chewing gum<br>5 × 40 × 0.6 cm | 2 × 15 3/4 × 1/4 in`
+    },
+    {
+      src: "images/260524_03.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_04.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_05.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_06.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_07.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_08.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_09.jpg",
+      alt: "",
+      caption: `<em>Tally Stick</em>, 2026. Aluminum, paint, chewing gum. 18 × 60 × 0.2 cm | 7 1/8 × 23 5/8 × 1/16 in`
+    },
+    {
+      src: "images/260524_10.jpg",
+      alt: "",
+      caption: `<em>Tally Stick</em>, 2026. Aluminum, paint, chewing gum. 18 × 60 × 0.2 cm | 7 1/8 × 23 5/8 × 1/16 in`
+    },
+    {
+      src: "images/260524_11.jpeg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_13.jpeg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_15.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    },
+    {
+      src: "images/260524_16.jpg",
+      alt: "",
+      caption: `<em>Untitled</em>, 2026`
+    }
+  ];
+
+  let current = 0;
+
+  const image = document.getElementById("image");
+  const caption = document.getElementById("caption");
+  const counter = document.getElementById("counter");
+  const prevZone = document.getElementById("prevZone");
+  const nextZone = document.getElementById("nextZone");
+  const gridToggle = document.getElementById("gridToggle");
+  const grid = document.getElementById("grid");
+
+  function show(index) {
+    current = (index + works.length) % works.length;
+    const work = works[current];
+
+    image.src = work.src;
+    image.alt = work.alt || "";
+    caption.innerHTML = work.caption || "";
+    counter.textContent = `${current + 1} / ${works.length}`;
+
+    history.replaceState(null, "", `#${current + 1}`);
+  }
+
+  function next() {
+    show(current + 1);
+  }
+
+  function previous() {
+    show(current - 1);
+  }
+
+  works.forEach((work, index) => {
+    const thumb = document.createElement("img");
+    thumb.src = work.src;
+    thumb.alt = work.alt || "";
+
+    thumb.addEventListener("click", () => {
+      document.body.classList.remove("grid-mode");
+      show(index);
+    });
+
+    grid.appendChild(thumb);
+  });
+
+  gridToggle.addEventListener("click", () => {
+    document.body.classList.toggle("grid-mode");
+  });
+
+  prevZone.addEventListener("click", (event) => {
+    event.stopPropagation();
+    previous();
+  });
+
+  nextZone.addEventListener("click", (event) => {
+    event.stopPropagation();
+    next();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (document.body.classList.contains("grid-mode")) return;
+
+    if (event.key === "ArrowRight" || event.key === " ") {
+      next();
+    }
+
+    if (event.key === "ArrowLeft") {
+      previous();
+    }
+  });
+
+  let touchStartX = null;
+
+  document.addEventListener("touchstart", (event) => {
+    touchStartX = event.changedTouches[0].screenX;
+  }, { passive: true });
+
+  document.addEventListener("touchend", (event) => {
+    if (document.body.classList.contains("grid-mode")) return;
+    if (touchStartX === null) return;
+
+    const touchEndX = event.changedTouches[0].screenX;
+    const delta = touchEndX - touchStartX;
+
+    if (Math.abs(delta) > 40) {
+      if (delta < 0) {
+        next();
+      } else {
+        previous();
+      }
+    }
+
+    touchStartX = null;
+  }, { passive: true });
+
+  document.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+  });
+
+  document.addEventListener("dragstart", (event) => {
+    event.preventDefault();
+  });
+
+  const hashIndex = parseInt(window.location.hash.replace("#", ""), 10);
+
+  if (!Number.isNaN(hashIndex) && hashIndex >= 1 && hashIndex <= works.length) {
+    current = hashIndex - 1;
+  }
+
+  show(current);
+</script>
+
+  <div class="temporary-page">
+  <div>
+    Hugo Hectus<br>
+    (b. 1997)<br>
+    Paris / Basel<br><br>
+    hugo.hectus@gmail.com
+  </div>
+</div>
+  
+</body>
+</html>
